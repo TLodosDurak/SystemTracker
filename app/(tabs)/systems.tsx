@@ -1,29 +1,48 @@
-// app/(tabs)/index.tsx
-import React from 'react';
+// app/(tabs)/SystemsScreen.tsx
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ScrollView, StyleSheet } from 'react-native';
-import TaskCard from '@/components/TaskCard';
-import { toggleActive } from '@/store/taskReducer';
+import { ScrollView, StyleSheet, View, Button } from 'react-native';
+import { RootState } from '@/types';
+import { selectSystem } from '@/store/systemsSlice';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Link } from 'expo-router';
-
+import SystemCard from '@/components/SystemCard';
+import SystemCreation from '@/components/SystemCreation';
+import TaskCreation from '@/components/TaskCreation';
 
 const SystemsScreen: React.FC = () => {
-  const tasks = useSelector((state: any) => state.tasks.tasks);  // Use your RootState type here instead of any
-  const dispatch = useDispatch();
+  const systems = useSelector((state: RootState) => state.systems);
+  const [showSystemModal, setShowSystemModal] = useState(false);
+  const [showTaskModal, setShowTaskModal] = useState(false);
+  const [activeSystemId, setActiveSystemId] = useState<string | null>(null);
+
+  const handleAddTask = (systemId: string) => {
+    setActiveSystemId(systemId);
+    setShowTaskModal(true);
+  };
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title">New Task +</ThemedText>
-      <ScrollView>
-        {tasks.map((task: any) => (  // Use your Task type here instead of any
-          <TaskCard key={task.id.toString()} task={task} onToggle={() => dispatch(toggleActive(task.id))} />
+      <ThemedText type="title">Manage Systems</ThemedText>
+      <Button title="+ New System" onPress={() => setShowSystemModal(true)} />
+      <ScrollView style={styles.scrollContainer}>
+        {systems.allIds.map((id) => (
+          <SystemCard
+            key={id}
+            systemId={id}
+            onSelect={setActiveSystemId}
+            onAddTask={handleAddTask}
+          />
         ))}
       </ScrollView>
-      <Link href="/" style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
-      </Link>
+      <SystemCreation visible={showSystemModal} onClose={() => setShowSystemModal(false)} />
+      {activeSystemId && (
+        <TaskCreation
+          visible={showTaskModal}
+          onClose={() => setShowTaskModal(false)}
+          systemId={activeSystemId}
+        />
+      )}
     </ThemedView>
   );
 };
@@ -32,12 +51,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    marginTop: 50,
+    marginTop: 20,
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
-  },
+  scrollContainer: {
+    flex: 1,
+  }
 });
 
 export default SystemsScreen;

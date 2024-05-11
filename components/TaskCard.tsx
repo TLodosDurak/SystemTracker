@@ -4,7 +4,7 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 interface TaskCardProps {
   task: {
-    id: number;
+    id: string;
     name: string;
     durationSeconds: number;
     isActive: boolean;
