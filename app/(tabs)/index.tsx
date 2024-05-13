@@ -1,12 +1,11 @@
-// app/(tabs)/index.tsx
 import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ScrollView, StyleSheet, View} from 'react-native';
-import {Picker} from '@react-native-picker/picker';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Picker } from 'react-native-ui-lib';
 import TaskCard from '@/components/TaskCard';
 import { toggleActive } from '@/store/tasksSlice';
 import { ThemedView } from '@/components/ThemedView';
-import { ThemedText} from '@/components/ThemedText';
+import { ThemedText } from '@/components/ThemedText';
 
 import { RootState } from '@/types';
 
@@ -23,15 +22,18 @@ const HomeScreen: React.FC = () => {
       <View style={styles.header}>
         <ThemedText type="title">Home Screen</ThemedText>
         <Picker
-          selectedValue={selectedSystemId}
-          style={{ height: 50, width: '30%'}}
-          onValueChange={(itemValue) => setSelectedSystemId(itemValue)}
+          value={selectedSystemId}
+          enableModalBlur={false}
+          onChange={item =>{ item && setSelectedSystemId(item.toString())}}  
+          topBarProps={{title: "Select a System"}}
+          placeholder="Select a System"
+          style={{ width: '100%' }}
         >
           {Object.values(systems).map((system) => (
-            <Picker.Item key={system.id} label={system.name} value={system.id} />
+            <Picker.Item key={system.id} value={system.id} label={system.name} />
           ))}
         </Picker>
-      </View> 
+      </View>
       <ScrollView>
         {systemTasks.map((task) => (
           <TaskCard key={task.id} task={task} onToggle={() => dispatch(toggleActive(task.id))} />
@@ -51,7 +53,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
-    marginTop:30,
+    marginTop: 30,
+    width: '100%',
   },
 });
 
