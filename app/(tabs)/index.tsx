@@ -1,21 +1,34 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { ScrollView, StyleSheet, View } from 'react-native';
-import { Picker } from 'react-native-ui-lib';
+import { View, Button, StyleSheet } from 'react-native';
+import DraggableFlatList, { RenderItemInfo } from 'react-native-draggable-flatlist';
 import TaskCard from '@/components/TaskCard';
-import { toggleActive } from '@/store/tasksSlice';
+import { toggleActive, updateTaskOrder } from '@/store/tasksSlice';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
-
-import { RootState } from '@/types';
+import { RootState, Task } from '@/types';
+import { Picker } from 'react-native-ui-lib';
+import { useNavigation } from '@react-navigation/native';
 
 const HomeScreen: React.FC = () => {
   const systems = useSelector((state: RootState) => state.systems.byId);
   const tasks = useSelector((state: RootState) => state.tasks.byId);
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const [selectedSystemId, setSelectedSystemId] = useState<string | undefined>(undefined);
 
+  useEffect(() => {
+    const firstSystemId = Object.keys(systems)[0];
+    if (firstSystemId) {
+      setSelectedSystemId(firstSystemId);
+    }
+  }, [systems]);
+
   const systemTasks = selectedSystemId ? systems[selectedSystemId]?.tasks.map(taskId => tasks[taskId]) : [];
+
+  const renderItem = ({ item, drag, isActive }: RenderItemInfo<Task>) => (
+    <TaskCard task={item} onToggle={() => dispatch(toggleActive(item.id))} onLongPress={drag} />
+  );
 
   return (
     <ThemedView style={styles.container}>
@@ -24,8 +37,8 @@ const HomeScreen: React.FC = () => {
         <Picker
           value={selectedSystemId}
           enableModalBlur={false}
-          onChange={item =>{ item && setSelectedSystemId(item.toString())}}  
-          topBarProps={{title: "Select a System"}}
+          onChange={item => item && setSelectedSystemId(item.toString())}
+          topBarProps={{ title: "Select a System" }}
           placeholder="Select a System"
           style={{ width: '100%' }}
         >
@@ -33,12 +46,20 @@ const HomeScreen: React.FC = () => {
             <Picker.Item key={system.id} value={system.id} label={system.name} />
           ))}
         </Picker>
+        {!selectedSystemId && (
+          <Button title="Create New System" onPress={() => navigation.navigate('SystemCreation' as never)} />
+        )}
       </View>
-      <ScrollView>
-        {systemTasks.map((task) => (
-          <TaskCard key={task.id} task={task} onToggle={() => dispatch(toggleActive(task.id))} />
-        ))}
-      </ScrollView>
+      <DraggableFlatList
+        data={systemTasks}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        onDragEnd={({ data }) => {
+          // Update the order of tasks in the state
+          const updatedTasks = data.map(task => task.id);
+          dispatch(updateTaskOrder({ systemId: selectedSystemId || '', taskOrder: updatedTasks }));
+        }}
+      />
     </ThemedView>
   );
 };
@@ -52,8 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
-    marginTop: 30,
+    marginTop: 50,
     width: '100%',
   },
 });

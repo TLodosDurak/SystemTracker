@@ -1,6 +1,5 @@
-// components/SystemCreation.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Modal } from 'react-native';
+import { View, Text, Button, StyleSheet, Modal, TextInput } from 'react-native';
 import uuid from 'react-native-uuid';
 import { useDispatch } from 'react-redux';
 import { addSystem } from '@/store/systemsSlice';
@@ -19,7 +18,7 @@ const SystemCreation: React.FC<SystemCreationProps> = ({ visible, onClose }) => 
       const newSystem = {
         id: uuid.v4().toString(),
         name: systemName,
-        tasks: []
+        tasks: [],
       };
       dispatch(addSystem(newSystem));
       setSystemName('');
@@ -62,7 +61,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'gray',
     borderRadius: 5,
-  }
+  },
 });
 
 export default SystemCreation;

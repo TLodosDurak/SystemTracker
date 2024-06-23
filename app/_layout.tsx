@@ -9,6 +9,8 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { Provider } from 'react-redux';
 import { store, persistor } from '@/store/store';
 import { PersistGate } from 'redux-persist/integration/react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 
 const RootLayout: React.FC = () => {
   const colorScheme = useColorScheme();
@@ -27,16 +29,18 @@ const RootLayout: React.FC = () => {
   }
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </ThemeProvider>
-      </PersistGate>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </ThemeProvider>
+        </PersistGate>
+      </Provider>
+    </GestureHandlerRootView>
   );
 };
 

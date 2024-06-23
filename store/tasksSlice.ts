@@ -1,15 +1,5 @@
-// store/tasksSlice.ts
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Task, TasksState } from '../types';
-
-interface UpdateTaskPayload {
-  id: string;
-  updates: Partial<Task>;
-}
-
-interface ToggleActivePayload {
-  id: string;
-}
 
 const initialState: TasksState = {
   byId: {},
@@ -27,38 +17,42 @@ const tasksSlice = createSlice({
         state.allIds.push(task.id);
       }
     },
-    updateTask(state, action: PayloadAction<UpdateTaskPayload>) {
+    toggleActive(state, action: PayloadAction<string>) {
+      const task = state.byId[action.payload];
+      if (task) {
+        if (task.isActive) {
+          task.isActive = false;
+          task.endTime = new Date().toISOString();
+          if (task.startTime) {
+            task.totalTimeSpent += Math.floor((new Date(task.endTime).getTime() - new Date(task.startTime).getTime()) / 1000);
+          }
+        } else {
+          // Deactivate other tasks
+          Object.values(state.byId).forEach(t => {
+            if (t.isActive) {
+              t.isActive = false;
+              t.endTime = new Date().toISOString();
+              if (t.startTime) {
+                t.totalTimeSpent += Math.floor((new Date(t.endTime).getTime() - new Date(t.startTime).getTime()) / 1000);
+              }
+            }
+          });
+          task.isActive = true;
+          task.startTime = new Date().toISOString();
+        }
+      }
+    },
+    updateTask(state, action: PayloadAction<{ id: string; updates: Partial<Task> }>) {
       const { id, updates } = action.payload;
       if (state.byId[id]) {
         state.byId[id] = { ...state.byId[id], ...updates };
       }
     },
-    toggleActive(state, action: PayloadAction<string>) {
-      const task = state.byId[action.payload];
-      if (task) {
-        task.isActive = !task.isActive;
-        // Optionally update lastActiveDate when toggling
-        task.lastActiveDate = new Date().toISOString();
-      }
-    },
-    updateLastActiveDate(state, action: PayloadAction<{ id: string; date: string }>) {
-      const task = state.byId[action.payload.id];
-      if (task) {
-        task.lastActiveDate = action.payload.date;
-      }
-    },
-    resetTimer(state, action: PayloadAction<string>) {
-      const task = state.byId[action.payload];
-      if (task) {
-        // Resetting timer to the initialState value or another specific logic
-        const originalTask = state.byId[action.payload]; // Assuming original timing data or reset logic needed
-        if (originalTask) {
-          task.durationSeconds = originalTask.durationSeconds;
-        }
-      }
-    },
-  },
+    updateTaskOrder(state, action: PayloadAction<{ systemId: string; taskOrder: string[] }>) {
+      // Update task order in the system
+    }
+  }
 });
 
-export const { addTask, updateTask, toggleActive, updateLastActiveDate, resetTimer } = tasksSlice.actions;
+export const { addTask, toggleActive, updateTask, updateTaskOrder } = tasksSlice.actions;
 export default tasksSlice.reducer;

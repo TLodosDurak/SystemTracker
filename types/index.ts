@@ -12,6 +12,10 @@ export interface UserProfile {
     email?: string;
     phone?: string;
   }
+  export interface TasksState {
+    byId: { [key: string]: Task };
+    allIds: string[];
+  }
   
   export interface System {
     id: string;
@@ -24,18 +28,15 @@ export interface UserProfile {
     name: string;
     durationSeconds: number;
     isActive: boolean;
-    lastActiveDate: string;
+    startTime?: string; // ISO string of the start time
+    endTime?: string; // ISO string of the end time
+    totalTimeSpent: number; // Total time spent in seconds
   }
   
-  
-  export interface TasksState {
-    byId: { [key: string]: Task };
-    allIds: string[];
-  }
-
   export interface SystemsState {
     byId: { [key: string]: System };
     allIds: string[];
-  } 
+  }
   
   export type RootState = ReturnType<typeof rootReducer>;
+  
